@@ -103,9 +103,11 @@ class Renderer {
     /**
      * Create a 3x3 grid texture for a Rubik's Cube face
      * @param {string} color - Color name for the face
+     * @param {boolean} highlighted - Whether to highlight this face with a bright border
+     * @param {string} label - Optional label text to display on the face
      * @returns {THREE.CanvasTexture} Texture with 3x3 grid
      */
-    create3x3Texture(color) {
+    create3x3Texture(color, highlighted = false, label = null) {
         const canvas = document.createElement('canvas');
         const size = 512;
         canvas.width = size;
@@ -143,6 +145,39 @@ class Renderer {
                 ctx.lineWidth = 2;
                 ctx.strokeRect(x, y, w, h);
             }
+        }
+
+        // Add label text if provided
+        if (label) {
+            console.log('Drawing label:', label, 'highlighted:', highlighted);
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Draw text
+            if (highlighted) {
+                // Highlighted face: bright background with large yellow text
+                // Draw solid background
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, size * 0.35, size, size * 0.3);
+
+                // Draw large text with shadow
+                ctx.font = 'bold 100px Arial';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 8;
+                ctx.strokeText(label, size / 2, size / 2);
+                ctx.fillStyle = '#ffeb3b';
+                ctx.fillText(label, size / 2, size / 2);
+            } else {
+                // Non-highlighted face: subtle white text
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(0, size * 0.4, size, size * 0.2);
+
+                ctx.font = 'bold 70px Arial';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(label, size / 2, size / 2);
+            }
+            ctx.restore();
         }
 
         const texture = new THREE.CanvasTexture(canvas);
@@ -211,7 +246,7 @@ class Renderer {
     }
 
     /**
-     * Hide specific faces (show as gray with pattern)
+     * Hide specific faces (show as dark gray with label)
      * @param {Array} faces - Array of face names to hide
      */
     hideFaces(faces) {
@@ -222,8 +257,9 @@ class Renderer {
                 if (this.materials[index].map) {
                     this.materials[index].map.dispose();
                 }
-                // Create gray texture
-                this.materials[index].map = this.create3x3Texture('gray');
+                // Create dark gray texture with label
+                const label = face.toUpperCase();
+                this.materials[index].map = this.create3x3Texture('gray', false, label);
                 this.materials[index].needsUpdate = true;
             }
         });
@@ -247,6 +283,26 @@ class Renderer {
                 this.materials[index].needsUpdate = true;
             }
         });
+    }
+
+    /**
+     * Highlight a specific face with a bright color and label to indicate it's being asked about
+     * @param {string} face - Face name to highlight
+     */
+    highlightFace(face) {
+        console.log('Highlighting face:', face);
+        const index = CONFIG.FACE_INDICES[face];
+        if (index !== undefined && this.materials[index]) {
+            // Dispose old texture
+            if (this.materials[index].map) {
+                this.materials[index].map.dispose();
+            }
+            // Create highlighted texture with bright light yellow color and prominent label
+            const label = face.toUpperCase();
+            console.log('Creating texture with label:', label, 'highlighted:', true);
+            this.materials[index].map = this.create3x3Texture('light_yellow', true, label);
+            this.materials[index].needsUpdate = true;
+        }
     }
 
     /**

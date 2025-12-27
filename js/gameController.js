@@ -67,6 +67,9 @@ class GameController {
         // Hide all hidden faces
         this.renderer.hideFaces(hiddenFaces);
 
+        // Highlight the face being asked about
+        this.renderer.highlightFace(this.currentFace);
+
         // Update UI with visible faces
         const visibleFaces = this.cubeManager.getVisibleFaces();
         const verticalFace = this.cubeManager.getVerticalFace();

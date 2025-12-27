@@ -34,7 +34,8 @@ const Utils = {
             orange: '#ff9800',
             blue: '#2196f3',
             green: '#4caf50',
-            gray: '#808080'
+            gray: '#808080',
+            light_yellow: '#fff59d'
         };
         return colorMap[colorName] || '#808080';
     },

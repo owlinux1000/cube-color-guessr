@@ -67,7 +67,7 @@ class UIManager {
      */
     showQuestion(face) {
         const faceUpper = Utils.capitalize(face);
-        this.elements.questionText.textContent = `What color is the ${faceUpper} face?`;
+        this.elements.questionText.innerHTML = `What color is the <span style="font-weight: bold; font-size: 1.3em; text-decoration: underline;">${faceUpper}</span> face?`;
     }
 
     /**

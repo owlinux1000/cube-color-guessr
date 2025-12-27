@@ -11,7 +11,8 @@ const CONFIG = {
         ORANGE: 0xff9800,
         BLUE: 0x2196f3,
         GREEN: 0x4caf50,
-        GRAY: 0x808080
+        GRAY: 0x808080,
+        LIGHT_YELLOW: 0xfff59d  // Light yellow for highlighted faces
     },
 
     // Color names for UI
