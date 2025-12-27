@@ -39,8 +39,8 @@ const CONFIG = {
 
     // Three.js rendering settings
     RENDERING: {
-        CANVAS_WIDTH: 600,
-        CANVAS_HEIGHT: 600,
+        CANVAS_WIDTH: 800,
+        CANVAS_HEIGHT: 800,
         CAMERA_FOV: 45,
         CAMERA_POSITION: { x: 0, y: 2.5, z: 6 },
         CUBE_SIZE: 2.5,

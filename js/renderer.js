@@ -14,6 +14,20 @@ class Renderer {
     }
 
     /**
+     * Get responsive canvas size
+     */
+    getCanvasSize() {
+        const container = this.canvas.parentElement;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+
+        // Use square aspect ratio (1:1) for the cube
+        const size = Math.min(containerWidth, containerHeight, CONFIG.RENDERING.CANVAS_WIDTH);
+
+        return { width: size, height: size };
+    }
+
+    /**
      * Initialize Three.js scene
      */
     init() {
@@ -21,11 +35,13 @@ class Renderer {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x2d2d2d);
 
-        // Create camera
-        const aspect = CONFIG.RENDERING.CANVAS_WIDTH / CONFIG.RENDERING.CANVAS_HEIGHT;
+        // Get responsive canvas size
+        const canvasSize = this.getCanvasSize();
+
+        // Create camera with 1:1 aspect ratio
         this.camera = new THREE.PerspectiveCamera(
             CONFIG.RENDERING.CAMERA_FOV,
-            aspect,
+            1, // Always 1:1 aspect ratio
             0.1,
             1000
         );
@@ -39,10 +55,8 @@ class Renderer {
             canvas: this.canvas,
             antialias: true
         });
-        this.renderer.setSize(
-            CONFIG.RENDERING.CANVAS_WIDTH,
-            CONFIG.RENDERING.CANVAS_HEIGHT
-        );
+        this.renderer.setSize(canvasSize.width, canvasSize.height);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
 
         // Add lighting
         const ambientLight = new THREE.AmbientLight(
@@ -57,6 +71,9 @@ class Renderer {
         );
         directionalLight.position.set(5, 5, 5);
         this.scene.add(directionalLight);
+
+        // Add resize listener
+        window.addEventListener('resize', () => this.handleResize());
 
         // Start animation loop
         this.animate();
@@ -239,12 +256,12 @@ class Renderer {
      * Handle window resize
      */
     handleResize() {
-        const width = CONFIG.RENDERING.CANVAS_WIDTH;
-        const height = CONFIG.RENDERING.CANVAS_HEIGHT;
+        const canvasSize = this.getCanvasSize();
 
-        this.camera.aspect = width / height;
+        this.camera.aspect = 1; // Always 1:1 aspect ratio
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize(width, height);
+        this.renderer.setSize(canvasSize.width, canvasSize.height);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
     }
 
     /**
