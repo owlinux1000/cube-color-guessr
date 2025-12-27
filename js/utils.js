@@ -78,5 +78,13 @@ const Utils = {
      */
     randomElement(array) {
         return array[Math.floor(Math.random() * array.length)];
+    },
+
+    /**
+     * Check if device is mobile (based on screen width)
+     * @returns {boolean} True if device is mobile
+     */
+    isMobile() {
+        return window.innerWidth <= 768;
     }
 };

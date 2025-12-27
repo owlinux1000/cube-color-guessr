@@ -11,6 +11,8 @@ class Renderer {
         this.cube = null;
         this.materials = [];
         this.animationId = null;
+        this.lastCubeState = null;
+        this.wasMobile = Utils.isMobile();
     }
 
     /**
@@ -25,6 +27,25 @@ class Renderer {
         const size = Math.min(containerWidth, containerHeight, CONFIG.RENDERING.CANVAS_WIDTH);
 
         return { width: size, height: size };
+    }
+
+    /**
+     * Get responsive cube size based on device
+     */
+    getCubeSize() {
+        // Make cube bigger on mobile devices for better visibility
+        return Utils.isMobile() ? 4.5 : CONFIG.RENDERING.CUBE_SIZE;
+    }
+
+    /**
+     * Get responsive camera position based on device
+     */
+    getCameraPosition() {
+        if (Utils.isMobile()) {
+            // Move camera further back and higher up on mobile to fit larger cube and show top face better
+            return { x: 0, y: 4, z: 9 };
+        }
+        return CONFIG.RENDERING.CAMERA_POSITION;
     }
 
     /**
@@ -46,7 +67,7 @@ class Renderer {
             1000
         );
 
-        const pos = CONFIG.RENDERING.CAMERA_POSITION;
+        const pos = this.getCameraPosition();
         this.camera.position.set(pos.x, pos.y, pos.z);
         this.camera.lookAt(0, 0, 0);
 
@@ -134,6 +155,9 @@ class Renderer {
      * @param {Object} cubeState - Object with face colors
      */
     createCube(cubeState) {
+        // Store cube state for potential recreation on resize
+        this.lastCubeState = cubeState;
+
         // Remove existing cube if any
         if (this.cube) {
             this.scene.remove(this.cube);
@@ -154,11 +178,12 @@ class Renderer {
             new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.back) })    // Back
         ];
 
-        // Create cube geometry
+        // Create cube geometry with responsive size
+        const cubeSize = this.getCubeSize();
         const geometry = new THREE.BoxGeometry(
-            CONFIG.RENDERING.CUBE_SIZE,
-            CONFIG.RENDERING.CUBE_SIZE,
-            CONFIG.RENDERING.CUBE_SIZE
+            cubeSize,
+            cubeSize,
+            cubeSize
         );
 
         // Create mesh with materials
@@ -257,11 +282,24 @@ class Renderer {
      */
     handleResize() {
         const canvasSize = this.getCanvasSize();
+        const isMobile = Utils.isMobile();
 
         this.camera.aspect = 1; // Always 1:1 aspect ratio
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(canvasSize.width, canvasSize.height);
         this.renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Recreate cube and adjust camera if mobile status changed
+        if (isMobile !== this.wasMobile) {
+            this.wasMobile = isMobile;
+            // Update camera position
+            const pos = this.getCameraPosition();
+            this.camera.position.set(pos.x, pos.y, pos.z);
+            // Recreate cube with new size
+            if (this.lastCubeState) {
+                this.createCube(this.lastCubeState);
+            }
+        }
     }
 
     /**
