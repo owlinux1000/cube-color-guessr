@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Color Guesser - Rubik's Cube Learning Game</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <header>
+        <h1>Cube Color Guesser</h1>
+        <p class="subtitle">Train your spatial reasoning for color-neutral solving</p>
+        <p class="description">Master Rubik's Cube color patterns by learning to recognize opposite faces and their relationships, essential for solving from any orientation.</p>
+    </header>
+
+    <main>
+        <div id="game-container">
+            <!-- Three.js Canvas Container -->
+            <div id="cube-viewport">
+                <canvas id="cube-canvas"></canvas>
+            </div>
+
+            <!-- Game Controls -->
+            <div id="game-controls">
+                <!-- Progress Info -->
+                <div id="progress-info">
+                    <div id="streak-display">
+                        <div><span>Streak: </span><strong id="current-streak">0</strong> 🔥</div>
+                        <div class="best-streak"><span>Best: </span><strong id="best-streak">0</strong></div>
+                    </div>
+                    <div id="visible-faces-mini">
+                        <span>Visible: </span>
+                        <span id="front-color" class="color-dot"></span>
+                        <span id="vertical-color" class="color-dot"></span>
+                    </div>
+                </div>
+
+                <!-- Question Area -->
+                <div id="question-area">
+                    <h2 id="question-text">What color is the LEFT face?</h2>
+                    <div id="feedback-indicator" class="hidden">
+                        <span id="feedback-icon"></span>
+                        <span id="feedback-text"></span>
+                    </div>
+                </div>
+
+                <!-- Color Options -->
+                <div id="color-options">
+                    <!-- Color buttons will be generated dynamically -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div id="action-buttons">
+                    <button id="new-game" class="btn-secondary">Reset Score</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Learn Rubik's Cube color patterns through gameplay</p>
+    </footer>
+
+    <!-- Three.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+
+    <!-- Game Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cubeManager.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/uiManager.js"></script>
+    <script src="js/gameController.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

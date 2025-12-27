@@ -1,0 +1,680 @@
+# Technical Design Document: Cube Color Learning Game
+
+## Executive Summary
+A client-side web application built with vanilla HTML, CSS, and JavaScript, utilizing Three.js for 3D rendering. The application will be hosted on GitHub Pages as a static site with no backend dependencies.
+
+## Technology Stack
+
+### Core Technologies
+- HTML5: Application structure and semantic markup
+- CSS3: Styling, animations, and responsive layout
+- JavaScript (ES6+): Game logic and interactivity
+- Three.js: 3D cube rendering and visualization
+
+### Development Tools
+- Git/GitHub: Version control and hosting
+- GitHub Pages: Static site deployment
+- Browser DevTools: Testing and debugging
+- Optional: Live Server for local development
+
+### Browser Support
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## System Architecture
+
+### Architecture Pattern
+Single Page Application (SPA) with modular JavaScript components
+
+```
+┌─────────────────────────────────────────┐
+│          User Interface Layer           │
+│  (HTML/CSS + DOM Manipulation)          │
+└─────────────┬───────────────────────────┘
+              │
+┌─────────────▼───────────────────────────┐
+│       Application Logic Layer           │
+│  ┌─────────────────────────────────┐   │
+│  │  Game Controller                │   │
+│  │  - State Management             │   │
+│  │  - Game Flow Control            │   │
+│  └─────────────────────────────────┘   │
+│  ┌──────────┐  ┌──────────┐  ┌──────┐ │
+│  │ Cube     │  │ Scoring  │  │ UI   │ │
+│  │ Manager  │  │ System   │  │ Mgr  │ │
+│  └──────────┘  └──────────┘  └──────┘ │
+└─────────────┬───────────────────────────┘
+              │
+┌─────────────▼───────────────────────────┐
+│       Rendering Layer (Three.js)        │
+│  - 3D Scene Management                  │
+│  - Cube Visualization                   │
+│  - Camera and Lighting                  │
+└─────────────┬───────────────────────────┘
+              │
+┌─────────────▼───────────────────────────┐
+│       Data Persistence Layer            │
+│  - LocalStorage API                     │
+│  - Game State Serialization             │
+└─────────────────────────────────────────┘
+```
+
+## Project Structure
+
+```
+cube-color/
+├── index.html              # Main HTML entry point
+├── css/
+│   ├── main.css           # Global styles and layout
+│   ├── components.css     # Component-specific styles
+│   └── responsive.css     # Media queries and responsive design
+├── js/
+│   ├── main.js            # Application initialization
+│   ├── config.js          # Configuration and constants
+│   ├── gameController.js  # Main game logic controller
+│   ├── cubeManager.js     # Cube state and logic
+│   ├── renderer.js        # Three.js rendering logic
+│   ├── uiManager.js       # UI state and interactions
+│   ├── scoreManager.js    # Scoring and statistics
+│   ├── storageManager.js  # LocalStorage operations
+│   └── utils.js           # Helper functions
+├── assets/
+│   ├── images/            # Icons, backgrounds, tutorial images
+│   └── sounds/            # Optional sound effects
+├── lib/
+│   └── three.min.js       # Three.js library (CDN alternative)
+├── docs/
+│   ├── requirements.txt
+│   └── technical-design.txt
+└── README.md
+```
+
+## Core Components
+
+### 1. Game Controller (gameController.js)
+Main orchestrator for game flow and state management.
+
+**Responsibilities:**
+- Initialize game systems
+- Manage game state transitions (menu → playing → results)
+- Coordinate between cube manager, UI, and scoring
+- Handle game modes and difficulty levels
+- Process player guesses
+
+**Key Methods:**
+```javascript
+class GameController {
+  init()                    // Initialize game
+  startNewGame(difficulty)  // Begin new game session
+  submitGuess(face, color)  // Process player guess
+  checkSolution()           // Validate all guesses
+  showResults()             // Display end game results
+  resetGame()               // Reset to initial state
+}
+```
+
+### 2. Cube Manager (cubeManager.js)
+Handles cube state, color configuration, and validation logic.
+
+**Responsibilities:**
+- Generate valid cube configurations
+- Store current cube state
+- Validate color guesses
+- Manage visible/hidden faces
+- Apply standard Rubik's Cube color scheme
+
+**Data Structure:**
+```javascript
+class CubeManager {
+  cubeState = {
+    front: 'white',
+    back: 'yellow',
+    left: 'orange',
+    right: 'red',
+    up: 'green',
+    down: 'blue'
+  }
+
+  visibleFaces = ['front', 'up']  // or ['front', 'down']
+
+  colorScheme = {
+    opposites: {
+      white: 'yellow',
+      blue: 'green',
+      red: 'orange'
+    }
+  }
+}
+```
+
+**Key Methods:**
+```javascript
+generateCube()              // Create new valid cube
+getVisibleFaces()           // Return visible face colors
+getHiddenFaces()            // Return faces to guess
+validateGuess(face, color)  // Check if guess is correct
+getHint(face)               // Provide hint for a face
+```
+
+### 3. Renderer (renderer.js)
+Manages Three.js scene, camera, and 3D cube rendering.
+
+**Responsibilities:**
+- Initialize Three.js scene
+- Create and render 3D cube
+- Handle camera positioning
+- Manage lighting and materials
+- Show/hide faces based on game state
+- Animate cube rotations
+
+**Three.js Setup:**
+```javascript
+class Renderer {
+  scene: THREE.Scene
+  camera: THREE.PerspectiveCamera
+  renderer: THREE.WebGLRenderer
+  cube: THREE.Group
+
+  init(containerElement)    // Setup Three.js
+  createCube(cubeState)     // Build 3D cube geometry
+  showFaces(facesList)      // Display specific faces
+  hideFaces(facesList)      // Hide specific faces
+  updateFaceColor(face, color)  // Change face color
+  animate()                 // Render loop
+  handleResize()            // Responsive canvas sizing
+}
+```
+
+**Cube Geometry:**
+- Use BoxGeometry with 6 separate materials (one per face)
+- Each face is a different colored plane
+- Hidden faces rendered as transparent or question marks
+
+### 4. UI Manager (uiManager.js)
+Handles all UI interactions and DOM updates.
+
+**Responsibilities:**
+- Handle button clicks and user input
+- Update score displays
+- Show/hide game sections
+- Manage color picker interface
+- Display feedback messages
+- Handle tutorial and help screens
+
+**Key Methods:**
+```javascript
+class UIManager {
+  showColorPicker(face)     // Display color selection UI
+  updateScore(score)        // Update score display
+  showFeedback(correct, face)  // Show correct/wrong feedback
+  displayResults(stats)     // Show end game statistics
+  showTutorial()            // Display tutorial overlay
+  highlightFace(face)       // Highlight a face to guess
+}
+```
+
+### 5. Score Manager (scoreManager.js)
+Tracks scoring, statistics, and progression.
+
+**Responsibilities:**
+- Calculate scores
+- Track accuracy and attempts
+- Manage level progression
+- Store high scores
+- Generate statistics
+
+**Scoring Logic:**
+```javascript
+class ScoreManager {
+  calculateScore(attempts, time, difficulty) {
+    // Base points per correct guess: 100
+    // Difficulty multiplier: Easy x1, Medium x1.5, Hard x2
+    // Time bonus: Additional points for quick completion
+    // Attempt penalty: Reduce points for multiple attempts
+  }
+
+  trackStatistics() {
+    // Total games played
+    // Average accuracy
+    // Best scores per difficulty
+    // Improvement over time
+  }
+}
+```
+
+### 6. Storage Manager (storageManager.js)
+Handles data persistence using LocalStorage.
+
+**Responsibilities:**
+- Save game state
+- Load previous progress
+- Store user preferences
+- Manage high scores
+- Handle data serialization
+
+**Storage Schema:**
+```javascript
+localStorage = {
+  'cubeGame.currentGame': {
+    difficulty: 'medium',
+    cubeState: {...},
+    guesses: {...},
+    startTime: timestamp
+  },
+  'cubeGame.highScores': [...],
+  'cubeGame.statistics': {
+    gamesPlayed: 0,
+    totalCorrect: 0,
+    totalGuesses: 0
+  },
+  'cubeGame.preferences': {
+    soundEnabled: true,
+    colorblindMode: false
+  }
+}
+```
+
+## Data Flow
+
+### Game Initialization Flow
+```
+1. main.js loads → initialize all managers
+2. Check localStorage for saved game
+3. Renderer creates Three.js scene
+4. UI displays main menu
+5. User selects difficulty
+6. GameController.startNewGame()
+```
+
+### Guess Submission Flow
+```
+1. User clicks on hidden face
+2. UIManager shows color picker
+3. User selects color
+4. GameController.submitGuess(face, color)
+5. CubeManager.validateGuess()
+6. ScoreManager updates score
+7. UIManager shows feedback
+8. Renderer updates cube visualization
+9. StorageManager saves state
+```
+
+### Game Completion Flow
+```
+1. All faces guessed
+2. GameController.checkSolution()
+3. ScoreManager.calculateScore()
+4. UIManager.displayResults()
+5. StorageManager saves statistics
+6. Option to play again or change difficulty
+```
+
+## Configuration Management
+
+### config.js
+Central configuration file for all constants and settings.
+
+```javascript
+const CONFIG = {
+  GAME: {
+    DIFFICULTY: {
+      EASY: { facesToGuess: 2, timeLimit: null, scoreMultiplier: 1 },
+      MEDIUM: { facesToGuess: 3, timeLimit: null, scoreMultiplier: 1.5 },
+      HARD: { facesToGuess: 4, timeLimit: null, scoreMultiplier: 2 }
+    },
+    COLORS: ['white', 'yellow', 'red', 'orange', 'blue', 'green'],
+    COLOR_OPPOSITES: {
+      white: 'yellow',
+      yellow: 'white',
+      red: 'orange',
+      orange: 'red',
+      blue: 'green',
+      green: 'blue'
+    }
+  },
+
+  RENDERING: {
+    CANVAS_WIDTH: 800,
+    CANVAS_HEIGHT: 600,
+    CAMERA_FOV: 45,
+    CAMERA_POSITION: { x: 3, y: 3, z: 5 },
+    CUBE_SIZE: 2
+  },
+
+  SCORING: {
+    BASE_POINTS: 100,
+    TIME_BONUS_THRESHOLD: 30,
+    ATTEMPT_PENALTY: 10,
+    PERFECT_BONUS: 50
+  },
+
+  STORAGE_KEYS: {
+    CURRENT_GAME: 'cubeGame.currentGame',
+    HIGH_SCORES: 'cubeGame.highScores',
+    STATISTICS: 'cubeGame.statistics',
+    PREFERENCES: 'cubeGame.preferences'
+  }
+};
+```
+
+## UI/UX Design Patterns
+
+### Layout Structure
+```html
+<body>
+  <header>
+    <h1>Cube Color Guesser</h1>
+    <nav><!-- Menu, Settings --></nav>
+  </header>
+
+  <main>
+    <div id="game-container">
+      <div id="cube-viewport">
+        <!-- Three.js canvas -->
+      </div>
+
+      <div id="game-controls">
+        <div id="visible-faces-info">
+          <!-- Display visible face colors -->
+        </div>
+
+        <div id="guess-area">
+          <!-- Buttons for each hidden face -->
+          <!-- Color picker -->
+        </div>
+
+        <div id="score-display">
+          <!-- Current score, attempts, timer -->
+        </div>
+      </div>
+    </div>
+
+    <div id="feedback-overlay">
+      <!-- Correct/Incorrect feedback -->
+    </div>
+  </main>
+
+  <footer>
+    <!-- Credits, links -->
+  </footer>
+</body>
+```
+
+### Responsive Design Breakpoints
+- Desktop: 1024px+ (full layout)
+- Tablet: 768px-1023px (adjusted layout)
+- Mobile: < 768px (not primary target, but graceful degradation)
+
+## 3D Rendering Approach
+
+### Three.js Implementation
+
+**Scene Setup:**
+```javascript
+// Camera setup for isometric-like view
+camera.position.set(3, 3, 5);
+camera.lookAt(0, 0, 0);
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
+directionalLight.position.set(5, 5, 5);
+```
+
+**Cube Construction:**
+```javascript
+// Create cube with 6 materials (one per face)
+const materials = [
+  new THREE.MeshLambertMaterial({ color: rightColor }),   // Right
+  new THREE.MeshLambertMaterial({ color: leftColor }),    // Left
+  new THREE.MeshLambertMaterial({ color: upColor }),      // Up
+  new THREE.MeshLambertMaterial({ color: downColor }),    // Down
+  new THREE.MeshLambertMaterial({ color: frontColor }),   // Front
+  new THREE.MeshLambertMaterial({ color: backColor })     // Back
+];
+
+const geometry = new THREE.BoxGeometry(2, 2, 2);
+const cube = new THREE.Mesh(geometry, materials);
+```
+
+**Face Visibility:**
+- Visible faces: Normal rendering with color
+- Hidden faces: Render with gray color or "?" texture
+- Correctly guessed: Animate color change with feedback
+- Incorrectly guessed: Red border/flash animation
+
+## State Management
+
+### Game State Machine
+```
+STATES:
+- MENU: Initial state, difficulty selection
+- PLAYING: Active game, accepting guesses
+- FEEDBACK: Showing result of a guess
+- RESULTS: End game screen with scores
+- TUTORIAL: Tutorial overlay active
+
+TRANSITIONS:
+MENU → PLAYING (on difficulty select)
+PLAYING → FEEDBACK (on guess submit)
+FEEDBACK → PLAYING (after 1 second)
+PLAYING → RESULTS (on game complete)
+RESULTS → MENU (on play again)
+MENU → TUTORIAL (on tutorial button)
+TUTORIAL → MENU (on close tutorial)
+```
+
+### State Object Structure
+```javascript
+gameState = {
+  status: 'MENU',  // Current state
+  difficulty: null,
+  cubeConfig: null,
+  visibleFaces: [],
+  guesses: {
+    left: null,
+    right: null,
+    back: null,
+    up/down: null
+  },
+  attempts: 0,
+  startTime: null,
+  score: 0
+}
+```
+
+## Performance Optimization
+
+### Loading Strategy
+1. Load critical HTML/CSS first
+2. Load Three.js from CDN with defer attribute
+3. Load game JavaScript modules
+4. Initialize Three.js scene
+5. Target: < 2 second initial load
+
+### Runtime Optimization
+- Reuse Three.js geometries and materials
+- Limit animation frame rate to 60 FPS
+- Debounce window resize events
+- Lazy load tutorial images
+- Minimize DOM manipulations (batch updates)
+
+### Memory Management
+- Dispose of Three.js objects when not needed
+- Clear old game states from memory
+- Limit localStorage size (keep only recent data)
+
+## Deployment Strategy
+
+### GitHub Pages Setup
+```
+1. Repository structure:
+   - Main branch contains source code
+   - All static assets in root or organized folders
+
+2. GitHub Pages configuration:
+   - Deploy from main branch, root directory
+   - Custom domain optional
+
+3. URL Structure:
+   - https://[username].github.io/cube-color/
+```
+
+### Build Process (if needed later)
+Currently no build process required (vanilla JS/HTML/CSS), but could add:
+- Minification for CSS/JS
+- Image optimization
+- Asset bundling
+
+### Version Control
+- Use semantic versioning (v1.0.0)
+- Tag releases in Git
+- Maintain CHANGELOG.md
+
+## Testing Strategy
+
+### Manual Testing Checklist
+- [ ] Cube renders correctly in all browsers
+- [ ] All difficulty modes work
+- [ ] Scoring calculates correctly
+- [ ] LocalStorage saves/loads properly
+- [ ] Responsive layout works on tablet
+- [ ] Color validation is accurate
+- [ ] Tutorial is clear and helpful
+- [ ] No console errors
+
+### Edge Cases to Test
+- LocalStorage disabled/full
+- Very fast guess submissions
+- Browser window resize during game
+- Multiple tabs open simultaneously
+- Incomplete games (reload during play)
+
+## Security Considerations
+
+### Client-Side Security
+- No sensitive data stored
+- LocalStorage is origin-bound
+- No external API calls (no CORS issues)
+- No user authentication required
+- Validate all user inputs (color selections)
+
+### Content Security
+- Use HTTPS via GitHub Pages
+- No inline JavaScript (CSP-friendly)
+- Sanitize any user-generated content (if added later)
+
+## Future Technical Enhancements
+
+### Phase 2 Potential Additions
+- Progressive Web App (PWA) with service worker
+- Offline capability
+- Web Workers for game logic
+- WebGL optimizations
+- Export statistics as JSON
+- Social sharing (Open Graph meta tags)
+
+### Scalability Considerations
+- Modular architecture supports feature additions
+- Could add backend later for global leaderboards
+- Easy to integrate analytics (Google Analytics)
+- Could migrate to TypeScript for better maintainability
+
+## Dependencies
+
+### External Libraries
+- Three.js (r150+): 3D rendering
+  - CDN: https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js
+  - Size: ~600KB minified
+
+### No Build Dependencies
+- Pure vanilla JavaScript (ES6+)
+- No npm, webpack, or bundler required
+- No transpilation needed (modern browsers only)
+
+## Development Workflow
+
+### Local Development
+```bash
+# Clone repository
+git clone https://github.com/[username]/cube-color.git
+cd cube-color
+
+# Serve locally (any static server)
+# Option 1: Python
+python -m http.server 8000
+
+# Option 2: Node.js http-server
+npx http-server
+
+# Option 3: VS Code Live Server extension
+# Open in browser: http://localhost:8000
+```
+
+### Git Workflow
+```bash
+# Feature development
+git checkout -b feature/new-feature
+# Make changes
+git commit -m "Add new feature"
+git push origin feature/new-feature
+# Merge to main after review
+
+# Deploy (automatic via GitHub Pages)
+git push origin main
+```
+
+## Code Style Guidelines
+
+### JavaScript
+- Use ES6+ features (const/let, arrow functions, classes)
+- Camel case for variables and functions
+- Pascal case for classes
+- Use JSDoc comments for functions
+- Maximum line length: 100 characters
+- Use semicolons
+
+### CSS
+- Use BEM naming convention
+- Mobile-first approach
+- CSS custom properties for theming
+- Organize by component
+
+### HTML
+- Semantic HTML5 elements
+- Accessibility attributes (ARIA labels)
+- Meaningful IDs and class names
+
+## Documentation Requirements
+
+- README.md: Project overview, setup instructions, and gameplay
+- Inline code comments: Complex logic explanations
+- JSDoc: Function parameters and return types
+- This technical design doc: Architecture reference
+
+## Accessibility Compliance
+
+- WCAG 2.1 Level AA target
+- Keyboard navigation support
+- Screen reader friendly labels
+- Sufficient color contrast (4.5:1 minimum)
+- Focus indicators on interactive elements
+- Alt text for all images
+- Colorblind mode option
+
+## Monitoring and Analytics (Future)
+
+### Potential Metrics to Track
+- Page load time
+- Game completion rate
+- Average score per difficulty
+- Most common errors
+- Browser/device distribution
+- Feature usage (hints, tutorial)
+
+### Implementation
+- Google Analytics 4 (optional)
+- Custom event tracking via JavaScript
+- Privacy-friendly (no PII collection)
