@@ -336,6 +336,15 @@ footer {
     color: var(--text-secondary);
 }
 
+footer p {
+    margin: 0.5rem 0;
+}
+
+.copyright {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     #game-container {
