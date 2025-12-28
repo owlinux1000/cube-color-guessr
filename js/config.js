@@ -50,13 +50,13 @@ const CONFIG = {
     },
 
     // Face indices for Three.js BoxGeometry
-    // Order: right, left, top, bottom, front, back
+    // Camera at (0, 2.5, 6) - only indices 2 (up) and 4 (front) are guaranteed visible
     FACE_INDICES: {
-        right: 0,
-        left: 1,
-        up: 2,
+        left: 0,   // Index 0 actually appears on LEFT side visually
+        right: 1,  // Index 1 actually appears on RIGHT side visually
+        up: 2,     // VISIBLE - top face
         down: 3,
-        front: 4,
+        front: 4,  // VISIBLE - front face
         back: 5
     }
 };

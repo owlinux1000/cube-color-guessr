@@ -16,37 +16,51 @@ class CubeManager {
      * Uses standard Rubik's Cube color scheme with random orientation
      */
     generateCube() {
-        // Create a randomized cube configuration
-        // The color pairs that must be opposite: white-yellow, red-orange, blue-green
-        const colorPairs = [
-            ['white', 'yellow'],
-            ['red', 'orange'],
-            ['blue', 'green']
+        // Standard Western Rubik's Cube color scheme
+        // Opposite pairs: White-Yellow, Blue-Green, Red-Orange
+        // Standard orientation: White=Front, Yellow=Back, Blue=Right, Green=Left, Red=Up, Orange=Down
+
+        // All 24 valid orientations (6 faces up × 4 rotations each)
+        const orientations = [
+            // RED on top (4 rotations)
+            {front: 'white', back: 'yellow', right: 'green', left: 'blue', up: 'red', down: 'orange'},
+            {front: 'blue', back: 'green', right: 'white', left: 'yellow', up: 'red', down: 'orange'},
+            {front: 'yellow', back: 'white', right: 'blue', left: 'green', up: 'red', down: 'orange'},
+            {front: 'green', back: 'blue', right: 'yellow', left: 'white', up: 'red', down: 'orange'},
+
+            // ORANGE on top (4 rotations)
+            {front: 'white', back: 'yellow', right: 'blue', left: 'green', up: 'orange', down: 'red'},
+            {front: 'green', back: 'blue', right: 'white', left: 'yellow', up: 'orange', down: 'red'},
+            {front: 'yellow', back: 'white', right: 'green', left: 'blue', up: 'orange', down: 'red'},
+            {front: 'blue', back: 'green', right: 'yellow', left: 'white', up: 'orange', down: 'red'},
+
+            // WHITE on top (4 rotations)
+            {front: 'red', back: 'orange', right: 'blue', left: 'green', up: 'white', down: 'yellow'},
+            {front: 'blue', back: 'green', right: 'orange', left: 'red', up: 'white', down: 'yellow'},
+            {front: 'orange', back: 'red', right: 'green', left: 'blue', up: 'white', down: 'yellow'},
+            {front: 'green', back: 'blue', right: 'red', left: 'orange', up: 'white', down: 'yellow'},
+
+            // YELLOW on top (4 rotations)
+            {front: 'red', back: 'orange', right: 'green', left: 'blue', up: 'yellow', down: 'white'},
+            {front: 'green', back: 'blue', right: 'orange', left: 'red', up: 'yellow', down: 'white'},
+            {front: 'orange', back: 'red', right: 'blue', left: 'green', up: 'yellow', down: 'white'},
+            {front: 'blue', back: 'green', right: 'red', left: 'orange', up: 'yellow', down: 'white'},
+
+            // BLUE on top (4 rotations)
+            {front: 'red', back: 'orange', right: 'yellow', left: 'white', up: 'blue', down: 'green'},
+            {front: 'yellow', back: 'white', right: 'orange', left: 'red', up: 'blue', down: 'green'},
+            {front: 'orange', back: 'red', right: 'white', left: 'yellow', up: 'blue', down: 'green'},
+            {front: 'white', back: 'yellow', right: 'red', left: 'orange', up: 'blue', down: 'green'},
+
+            // GREEN on top (4 rotations)
+            {front: 'red', back: 'orange', right: 'white', left: 'yellow', up: 'green', down: 'blue'},
+            {front: 'white', back: 'yellow', right: 'orange', left: 'red', up: 'green', down: 'blue'},
+            {front: 'orange', back: 'red', right: 'yellow', left: 'white', up: 'green', down: 'blue'},
+            {front: 'yellow', back: 'white', right: 'red', left: 'orange', up: 'green', down: 'blue'},
         ];
 
-        // Shuffle the color pairs to randomize which pair goes on which axis
-        const shuffledPairs = Utils.shuffle(colorPairs);
-
-        // Randomly assign each pair to opposite faces
-        const assignments = [
-            ['front', 'back'],
-            ['left', 'right'],
-            ['up', 'down']
-        ];
-
-        this.cubeState = {};
-
-        shuffledPairs.forEach((pair, index) => {
-            const [face1, face2] = assignments[index];
-            // Randomly choose which color goes on which face of the pair
-            if (Math.random() < 0.5) {
-                this.cubeState[face1] = pair[0];
-                this.cubeState[face2] = pair[1];
-            } else {
-                this.cubeState[face1] = pair[1];
-                this.cubeState[face2] = pair[0];
-            }
-        });
+        // Pick a random orientation
+        this.cubeState = orientations[Math.floor(Math.random() * orientations.length)];
 
         // Always show 'up' as the visible vertical face
         this.verticalFace = 'up';

@@ -149,7 +149,6 @@ class Renderer {
 
         // Add label text if provided
         if (label) {
-            console.log('Drawing label:', label, 'highlighted:', highlighted);
             ctx.save();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -203,14 +202,13 @@ class Renderer {
         }
 
         // Create materials with 3x3 textures for each face
-        // Order: right, left, top, bottom, front, back
         this.materials = [
-            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.right) }),  // Right
-            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.left) }),   // Left
-            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.up) }),     // Top
-            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.down) }),   // Bottom
-            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.front) }), // Front
-            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.back) })    // Back
+            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.left) }),   // Index 0 - LEFT
+            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.right) }),  // Index 1 - RIGHT
+            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.up) }),     // Index 2 - UP
+            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.down) }),   // Index 3 - DOWN
+            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.front) }),  // Index 4 - FRONT
+            new THREE.MeshLambertMaterial({ map: this.create3x3Texture(cubeState.back) })    // Index 5 - BACK
         ];
 
         // Create cube geometry with responsive size
@@ -246,7 +244,7 @@ class Renderer {
     }
 
     /**
-     * Hide specific faces (show as dark gray with label)
+     * Hide specific faces (show as dark gray without labels)
      * @param {Array} faces - Array of face names to hide
      */
     hideFaces(faces) {
@@ -257,9 +255,8 @@ class Renderer {
                 if (this.materials[index].map) {
                     this.materials[index].map.dispose();
                 }
-                // Create dark gray texture with label
-                const label = face.toUpperCase();
-                this.materials[index].map = this.create3x3Texture('gray', false, label);
+                // Create plain gray texture without label
+                this.materials[index].map = this.create3x3Texture('gray', false, null);
                 this.materials[index].needsUpdate = true;
             }
         });
@@ -286,21 +283,18 @@ class Renderer {
     }
 
     /**
-     * Highlight a specific face with a bright color and label to indicate it's being asked about
+     * Highlight a specific face with a bright color to indicate it's being asked about
      * @param {string} face - Face name to highlight
      */
     highlightFace(face) {
-        console.log('Highlighting face:', face);
         const index = CONFIG.FACE_INDICES[face];
         if (index !== undefined && this.materials[index]) {
             // Dispose old texture
             if (this.materials[index].map) {
                 this.materials[index].map.dispose();
             }
-            // Create highlighted texture with bright light yellow color and prominent label
-            const label = face.toUpperCase();
-            console.log('Creating texture with label:', label, 'highlighted:', true);
-            this.materials[index].map = this.create3x3Texture('light_yellow', true, label);
+            // Create highlighted texture with bright light yellow color without label
+            this.materials[index].map = this.create3x3Texture('light_yellow', true, null);
             this.materials[index].needsUpdate = true;
         }
     }
